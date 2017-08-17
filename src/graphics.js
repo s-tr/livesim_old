@@ -18,21 +18,52 @@ function GameContext(){
 	this.approachTime=1.2;
 }
 
+/**
+ * A GameContext is first prepared for drawing with the initialise()
+ * function, which takes a type parameter. It is meant to be extensible
+ * with different modules implementing game playfield types.
+ * 
+ * Each module has to provide an initialisation function through 
+ * __registerInit(), through which it will initialise the values of:
+ * 
+ *   * position, a function for calculating the position of a note at
+ *     a particular offset and lane,
+ *   * __drawNote, a function for drawing a note on the screen,
+ *   * reset, a function for clearing the screen and drawing an empty
+ *     playfield,
+ *   * __drawLNConnect, a function for drawing the connectors of a LN
+ *     given the starting and ending positions/offsets.
+ * 
+ * 
+ */
+
+/**
+ * Position functions
+ * 
+ * Position functions take five arguments:
+ * 1. The start lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
+ * 2. The end lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
+ * 3. The progress of the note (0..1+a bit)
+ * 4. The size of the playfield
+ * 5. Whether the arguments are to be returned in absolute coordinates
+ *    or with skew.
+ * 
+ * Position returns a 5-element array as follows:
+ * 
+ * [0]: X position of note
+ * [1]: Y position of note
+ * [2]: Scale factor applied to note
+ * [3]: Rotation amount of note (starting from 0, going counterclockwise from 
+ *      the positive X-axis)
+ * [4]: Skew factor applied to note
+ */
 GameContext.prototype.initialise= function(type){
-	if(type=="bandori"){
-		this.position=__positionBandori;
-		this.__drawNote=__drawNoteBandori;
-		this.reset=__prepareCanvasBandori;
-		this.__drawLNConnect=__drawLNConnectBandori;
-		document.title="bandori player";
+	var f=__initTable[type];
+	if((typeof(f))==undefined){
+		alert("Invalid game type");
+		return;
 	}
-	else/* if(type=="sif")*/{
-		this.position=__positionSIF;
-		this._drawNote=__drawNoteSIF;
-		this.reset=__prepareCanvasSIF;
-		this.__drawLNConnect=(function(){});
-		document.title="sif player";
-	}
+	f(this);
 	this.reset();
 }
 	
@@ -65,5 +96,11 @@ GameContext.prototype.drawLN = function (curTime,ln){
 	for(var i=visBegin;i<=visEnd;i++){
 		this.drawNote(curTime,ln.notes[i]);
 	}
+}
+
+var __initTable={};
+
+function __registerInit(name,f){
+	__initTable[name]=f;
 }
 

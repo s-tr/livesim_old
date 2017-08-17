@@ -1,3 +1,21 @@
+var bd={
+	nLanes: 7,
+	beginWidth: 0.14,
+	endWidth: 1.54,
+	trackTop: 0.06,
+	spawnPos: 0.08,
+	judgePos: 0.86,
+	skewPerLane: function(){
+		return (bd.endWidth-bd.beginWidth)/bd.nLanes/(bd.judgePos-bd.trackTop);
+	},
+	spawnWidth: function(){
+		return bd.beginWidth+(bd.spawnPos-bd.trackTop)/(bd.judgePos-bd.trackTop)*(bd.endWidth-bd.beginWidth);
+	},
+	laneWidth: function(){
+		return bd.endWidth/bd.nLanes;
+	},
+}
+
 function __prepareCanvasBandori (){
 	var ctx=this.context;
 	var h=this.size;
@@ -11,58 +29,36 @@ function __prepareCanvasBandori (){
 
 	ctx.fillStyle='#a0a0cc';
 	ctx.beginPath();
-	ctx.moveTo(0.73*h,0.06*h);
-	ctx.lineTo(0.03*h,0.86*h);
-	ctx.lineTo(-0.005*h,0.86*h);
-	ctx.lineTo(0.724*h,0.06*h);
+	ctx.moveTo((0.8-bd.beginWidth/2)*h,bd.trackTop*h);
+	ctx.lineTo((0.8-bd.endWidth/2)*h,bd.judgePos*h);
+	ctx.lineTo((0.8-bd.endWidth/2-0.035)*h,bd.judgePos*h);
+	ctx.lineTo((0.8-bd.beginWidth/2-0.006)*h,bd.trackTop*h);
 	ctx.fill();
 
 	ctx.beginPath();
-	ctx.moveTo(0.87*h,0.06*h);
-	ctx.lineTo(1.57*h,0.86*h);
-	ctx.lineTo(1.605*h,0.86*h);
-	ctx.lineTo(0.876*h,0.06*h);
+	ctx.moveTo((0.8+bd.beginWidth/2)*h,bd.trackTop*h);
+	ctx.lineTo((0.8+bd.endWidth/2)*h,bd.judgePos*h);
+	ctx.lineTo((0.8+bd.endWidth/2+0.035)*h,bd.judgePos*h);
+	ctx.lineTo((0.8+bd.beginWidth/2+0.006)*h,bd.trackTop*h);
 	ctx.fill();
 
 	ctx.lineWidth=2;
 	ctx.strokeStyle='#dddddd';
 	
-	for(n=1;n<=6;n++){
-
+	for(n=1;n<=bd.nLanes-1;n++){
 		ctx.beginPath();
-		ctx.moveTo((0.73+n*0.02)*h,0.06*h);
-		ctx.lineTo((0.03+n*0.22)*h,0.86*h);
+		ctx.moveTo(((0.8-bd.beginWidth/2)+n*bd.beginWidth/bd.nLanes)*h,bd.trackTop*h);
+		ctx.lineTo(((0.8-bd.endWidth/2)+n*bd.laneWidth())*h,bd.judgePos*h);
 		ctx.stroke();
 	}
 
 	ctx.strokeStyle='#bbbbcc';
 	ctx.beginPath();
-	ctx.moveTo(0*h,0.86*h);
-	ctx.lineTo(1.6*h,0.86*h);
+	ctx.moveTo(0*h,bd.judgePos*h);
+	ctx.lineTo(1.6*h,bd.judgePos*h);
 	ctx.lineWidth=3;
 	ctx.stroke();
 }
-
-/**
- * Position functions
- * 
- * Position functions take five arguments:
- * 1. The start lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
- * 2. The end lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
- * 3. The progress of the note (0..1+a bit)
- * 4. The size of the playfield
- * 5. Whether the arguments are to be returned in absolute coordinates
- *    or with skew.
- * 
- * Position returns a 5-element array as follows:
- * 
- * [0]: X position of note
- * [1]: Y position of note
- * [2]: Scale factor applied to note
- * [3]: Rotation amount of note (starting from 0, going counterclockwise from 
- *      the positive X-axis)
- * [4]: Skew factor applied to note
- */
 
 function __positionBandori(start,end,progress,size,isAbsolute){
 	/**
@@ -76,20 +72,23 @@ function __positionBandori(start,end,progress,size,isAbsolute){
 	isAbsolute = isAbsolute || false;
 	if(isAbsolute){
 		return [
-			size/100.0*(71.25+2.5*(end+0.5)+P(progress)*(19.5*(end+0.5)-68.25)),
-			(0.08+0.78*P(progress))*size,
-			(17.5+119*P(progress))/136.5, 
+			size*(
+				(1.6-bd.spawnWidth())/2+(bd.spawnWidth()/bd.nLanes)*(end+0.5)+
+				P(progress)*((bd.endWidth-bd.spawnWidth())/bd.nLanes*(end+0.5)+(bd.spawnWidth()-bd.endWidth)/2)),
+			(bd.spawnPos+(bd.judgePos-bd.spawnPos)*P(progress))*size,
+			(bd.spawnWidth()+(bd.endWidth-bd.spawnWidth())*P(progress))/bd.endWidth, 
 			0,
 			0
 		];
 	}
 	else {
+		var skewCorrection=bd.laneWidth()-bd.skewPerLane()*bd.judgePos;
 		return [
-			0.8*size+0.005*size*(end-3),
-			(0.08+0.78*P(progress))*size,
-			(17.5+119*P(progress))/136.5,
+			0.8*size+skewCorrection*size*(end-(bd.nLanes-1)/2.0),
+			(bd.spawnPos+(bd.judgePos-bd.spawnPos)*P(progress))*size,
+			(bd.spawnWidth()+(bd.endWidth-bd.spawnWidth())*P(progress))/bd.endWidth,
 			0,
-			0.25*(end-3)
+			bd.skewPerLane()*(end-(bd.nLanes-1)/2.0)
 		];
 	}
 }
@@ -100,8 +99,8 @@ function __drawHitBandori(posArr){
 	var scale=posArr[2];
 	var rotate=posArr[3];
 	var skew=posArr[4];
-	var xdim=scale*0.21*this.size/2;
-	var ydim=(0.4+0.6*scale)*scale*0.10*this.size/2;
+	var xdim=scale*bd.laneWidth()*this.size/2;
+	var ydim=(0.4+0.6*scale)*0.45*xdim;
 	var c=this.context;
 	var grad=c.createLinearGradient(xpos,ypos-ydim*0.8,xpos,ypos+ydim*0.8);
 	grad.addColorStop(0,'#b57edc');
@@ -137,8 +136,8 @@ function __drawLNEndBandori(posArr){
 	var scale=posArr[2];
 	var rotate=posArr[3];
 	var skew=posArr[4];
-	var xdim=scale*0.21*this.size/2;
-	var ydim=(0.4+0.6*scale)*scale*0.10*this.size/2;
+	var xdim=scale*bd.laneWidth()*this.size/2;
+	var ydim=(0.4+0.6*scale)*0.45*xdim;
 	var c=this.context;
 	var grad=c.createLinearGradient(xpos,ypos-ydim*0.8,xpos,ypos+ydim*0.8);
 	grad.addColorStop(0,'#00ff66');
@@ -174,8 +173,8 @@ function __drawSwipeBandori(posArr){
 	var scale=posArr[2];
 	var rotate=posArr[3];
 	var skew=posArr[4];
-	var xdim=scale*0.21*this.size/2;
-	var ydim=(0.55+0.45*scale)*scale*0.11*this.size/2;
+	var xdim=scale*bd.laneWidth()*this.size/2;
+	var ydim=(0.4+0.6*scale)*0.45*xdim;
 	var c=this.context;
 	
 	
@@ -228,8 +227,8 @@ function __drawLNMidBandori(posArr){
 	var scale=posArr[2];
 	var rotate=posArr[3];
 	var skew=posArr[4];
-	var xdim=scale*0.235*this.size/2;
-	var ydim=(0.7+0.3*scale)*scale*0.03*this.size/2;
+	var xdim=scale*1.1*bd.laneWidth()*this.size/2;
+	var ydim=(0.7+0.3*scale)*scale*0.13*xdim;
 	var c=this.context;
 	
 	c.save();
@@ -295,6 +294,7 @@ function __drawNoteBandori(posArr,type){
  * note is drawn there.
  */
 function __drawLNConnectBandori(curTime,fromTime,fromPos,toTime,toPos){
+	
 	if( (fromTime > curTime+this.approachTime) ||
 	    (toTime   < curTime)){
 		return;
@@ -311,17 +311,17 @@ function __drawLNConnectBandori(curTime,fromTime,fromPos,toTime,toPos){
 	
 	var first=this.position(fromPos,fromPos,1-(fromTime-curTime)/this.approachTime,this.size,true);
 	var second=this.position(toPos,toPos,1-(toTime-curTime)/this.approachTime,this.size,true);
-	
+	var thickness=0.85*bd.laneWidth()/2;
 	var ctx=this.context;
 	
 	ctx.save();
 	
 	ctx.fillStyle="#008000";
 	ctx.beginPath();
-	ctx.moveTo(first[0]-0.095*this.size*first[2],first[1]);
-	ctx.lineTo(first[0]+0.095*this.size*first[2],first[1]);
-	ctx.lineTo(second[0]+0.095*this.size*second[2],second[1]);
-	ctx.lineTo(second[0]-0.095*this.size*second[2],second[1]);
+	ctx.moveTo(first[0]-thickness*this.size*first[2],first[1]);
+	ctx.lineTo(first[0]+thickness*this.size*first[2],first[1]);
+	ctx.lineTo(second[0]+thickness*this.size*second[2],second[1]);
+	ctx.lineTo(second[0]-thickness*this.size*second[2],second[1]);
 	ctx.fill();
 	
 	if(fromTime==curTime){
@@ -330,5 +330,15 @@ function __drawLNConnectBandori(curTime,fromTime,fromPos,toTime,toPos){
 	
 	ctx.restore();
 }
+
+function __initBandori(t){
+	t.position=__positionBandori;
+	t.__drawNote=__drawNoteBandori;
+	t.reset=__prepareCanvasBandori;
+	t.__drawLNConnect=__drawLNConnectBandori;
+	document.title="bandori player";
+}
+
+__registerInit("bandori",__initBandori);
 
 

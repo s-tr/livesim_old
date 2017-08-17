@@ -8,7 +8,7 @@
                          version 0.0.1
 
 
-    This program is a player for custom charts for the rhythm games
+This program is a player for custom charts for the rhythm games
 BanG Dream! Girls Band Party and Love Live! School Idol Festival.
 
 USAGE
@@ -46,7 +46,7 @@ are, from left to right,
 * the number of beats per bar,
 * and the scroll speed.
 
-An interited section statement represents a change in track velocity.
+An inherited section statement represents a change in track velocity.
 Its values are, from left to right,
 
 * the offset of the change of velocity,
@@ -66,7 +66,7 @@ The syntax for notes is as follows:
 	Note       ::= Hit | LN
 	Hit        ::= "h" NoteInfo "\n"
 	LN         ::= "l" Integer "\n" LNNode+
-	LNNode     ::= NoteInfo "\n"
+	LNNode     ::= "n" NoteInfo "\n"
 	NoteInfo   ::= Number Number Number Number Number Integer Integer
 ```
 
@@ -84,5 +84,7 @@ If the direct timing section is set to -1, the second argument is instead
 taken as the literal timing of the note.
 For Bandori and SIF modes, the origin of the note is ignored.
 
-Hit's values are
+LN additionally takes a value stating how many nodes the LN has. If a 
+value less than 2 is used, or there are not enough nodes specified, an
+error is generated and parsing fails.
 

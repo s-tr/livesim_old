@@ -30,13 +30,13 @@
 	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
 	<script src="src/structures.js"></script>
 	<script src="src/graphics.js"></script>
+	<script src="src/timing.js"></script>
 	<script src="src/bandori.js"></script>
 	<script src="src/sif.js"></script>
-	<script src="src/timing.js"></script>
 </head>
 
 <body>
-	<canvas id="canvas" height=600 width=960></canvas>=
+	<canvas id="canvas" height=600 width=960></canvas>
 	<br />
 	<button onclick="startSim()" height=15 width=35>Start</button>
 	<button onclick="stopSim()" height=15 width=35>Stop</button>
@@ -56,7 +56,11 @@
 		}
 		function startSim(){
 			var startTime=+(new Date().getTime());
-			setInterval(_draw,1000/240.0,c,notelist,startTime);
+			var g=setInterval(_draw,1000/240.0,c,notelist,startTime);
+			stopSim=function(){
+				clearInterval(g);
+				c.reset();
+			}
 		}
 		function stopSim(){
 			clearInterval(_draw);
@@ -100,26 +104,27 @@
 			new Note([0,4,3.0],1,Note.SWIPE),			
 		];
 		/*
-		var notelist = [
-			new Note(2,2.4,Note.HIT),
-			new Note(6,2.5,Note.HIT),
-			new Note(3,2.6,Note.HIT),
-			new Note(5,2.7,Note.HIT),
-			new Note(4,2.8,Note.HIT),
-			new Note(2,3.2,Note.HIT),
-			new Note(6,3.3,Note.HIT),
-			new Note(3,3.4,Note.HIT),
-			new Note(5,3.5,Note.HIT),
-			new Note(4,3.6,Note.HIT),
+		notelist = [
+			new Note(2.4,2,Note.HIT),
+			new Note(2.5,6,Note.HIT),
+			new Note(2.6,3,Note.HIT),
+			new Note(2.7,5,Note.HIT),
+			new Note(2.8,4,Note.HIT),
+			new Note(3.2,6,Note.HIT),
+			new Note(3.3,5,Note.HIT),
+			new Note(3.4,2,Note.HIT),
+			new Note(3.5,3,Note.HIT),
+			new Note(3.6,4,Note.HIT),
 		];
 		*/
+		
 		var c=new GameContext();
-		c.approachTime=1.1;
+		c.approachTime=0.7;
 		c.initialise("bandori");
 		
 		var timing=new TimingInfo([
 			{ "offset" : 0, "bpm" : 120, "measure" : 4 }]);
-		timing.autoConvert(notelist);
+		timing.convertAll(notelist);
 	</script>
 	
 </body>
