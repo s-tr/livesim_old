@@ -24,7 +24,7 @@ function GameContext(){
  * with different modules implementing game playfield types.
  * 
  * Each module has to provide an initialisation function through 
- * __registerInit(), through which it will initialise the values of:
+ * __registerInit(). It will initialise the values of:
  * 
  *   * position, a function for calculating the position of a note at
  *     a particular offset and lane,
@@ -35,12 +35,9 @@ function GameContext(){
  *     given the starting and ending positions/offsets.
  * 
  * 
- */
-
-/**
  * Position functions
  * 
- * Position functions take five arguments:
+ * position() takes five arguments:
  * 1. The start lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
  * 2. The end lane (0..N-1 for N discrete lanes, real 0..1 otherwise)
  * 3. The progress of the note (0..1+a bit)
@@ -56,6 +53,27 @@ function GameContext(){
  * [3]: Rotation amount of note (starting from 0, going counterclockwise from 
  *      the positive X-axis)
  * [4]: Skew factor applied to note
+ * 
+ * 
+ * Raw note drawing functions
+ * 
+ * __drawNote() takes two values:
+ * 1. An array in the form returned by position()
+ * 2. The type of note (see structures.js)
+ * 
+ * __drawLNConnect() takes five values:
+ * 1. The current time
+ * 2. The time offset of the beginning of the connector
+ * 3. The lane of the beginning of the connector
+ * 4. The time offset of the end of the connector
+ * 5. The lane of the end of the connector
+ *
+ * These functions do not return a value.
+ * 
+ * 
+ * Playfield initialisation function
+ * 
+ * reset() takes no arguments and returns no values.
  */
 GameContext.prototype.initialise= function(type){
 	var f=__initTable[type];

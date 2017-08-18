@@ -100,7 +100,7 @@ function __drawHitBandori(posArr){
 	var rotate=posArr[3];
 	var skew=posArr[4];
 	var xdim=scale*bd.laneWidth()*this.size/2;
-	var ydim=(0.4+0.6*scale)*0.45*xdim;
+	var ydim=(0.2+0.8*scale)*scale*0.1*(bd.judgePos-bd.trackTop)*this.size/2;
 	var c=this.context;
 	var grad=c.createLinearGradient(xpos,ypos-ydim*0.8,xpos,ypos+ydim*0.8);
 	grad.addColorStop(0,'#b57edc');
@@ -137,7 +137,7 @@ function __drawLNEndBandori(posArr){
 	var rotate=posArr[3];
 	var skew=posArr[4];
 	var xdim=scale*bd.laneWidth()*this.size/2;
-	var ydim=(0.4+0.6*scale)*0.45*xdim;
+	var ydim=(0.2+0.8*scale)*scale*0.1*(bd.judgePos-bd.trackTop)*this.size/2;
 	var c=this.context;
 	var grad=c.createLinearGradient(xpos,ypos-ydim*0.8,xpos,ypos+ydim*0.8);
 	grad.addColorStop(0,'#00ff66');
@@ -174,7 +174,7 @@ function __drawSwipeBandori(posArr){
 	var rotate=posArr[3];
 	var skew=posArr[4];
 	var xdim=scale*bd.laneWidth()*this.size/2;
-	var ydim=(0.4+0.6*scale)*0.45*xdim;
+	var ydim=(0.2+0.8*scale)*scale*0.1*(bd.judgePos-bd.trackTop)*this.size/2;
 	var c=this.context;
 	
 	
@@ -228,7 +228,7 @@ function __drawLNMidBandori(posArr){
 	var rotate=posArr[3];
 	var skew=posArr[4];
 	var xdim=scale*1.1*bd.laneWidth()*this.size/2;
-	var ydim=(0.7+0.3*scale)*scale*0.13*xdim;
+	var ydim=(0.2+0.8*scale)*scale*0.04*(bd.judgePos-bd.trackTop)*this.size/2;
 	var c=this.context;
 	
 	c.save();
@@ -276,6 +276,9 @@ function __drawNoteBandori(posArr,type){
 			break;
 		case Note.SWIPE:
 			__drawSwipeBandori.call(this,posArr);
+			break;
+		default:
+			__drawHitBandori.call(this,posArr);
 			break;
 	}
 }

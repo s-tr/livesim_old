@@ -1,26 +1,3 @@
-<!--
-   player.html
-   
-   Copyright 2017 sstb <swchong25@gmail.com>
-   
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.
-   
-   
--->
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -40,69 +17,91 @@
 	<br />
 	<button onclick="startSim()" height=15 width=35>Start</button>
 	<button onclick="stopSim()" height=15 width=35>Stop</button>
+	<label id="status">Stopped</label>
 	<script type="text/javascript">
+		var frameCount=0;
+		var fps=240;
+		var s=document.getElementById("status");
+		var lastTime=0;
+		var fpsInterval=1;
+		var delayStart=1000;
 		function _draw(ctx,notes,start){
-			var curTime=(+(new Date().getTime())-start)/1000.0;
+			var rawTime=(+(new Date().getTime())-start)/1000.0;
+			var curTime=timing.trackPos(rawTime);
 			ctx.reset();
+			var nn=0;
 			for(var i=0;i<notes.length;i++){
 				if(notes[i].isVisible(curTime,ctx.approachTime)){
 					if(notes[i].noteType=="LN"){
-						try{ctx.drawLN(curTime,notes[i]);}catch(e){console.log(e);}
+						ctx.drawLN(curTime,notes[i]);
 					} else {
 						ctx.drawNote(curTime,notes[i]);
 					}
+					nn++;
 				}
+			}
+			frameCount++;
+			if(frameCount%(fpsInterval*fps)==0){
+				var fpsAll=frameCount/rawTime;
+				var fpsLast=fps*fpsInterval/(rawTime-lastTime);
+				lastTime=rawTime;
+				s.innerHTML="Running; "+fpsLast.toFixed(2)+"fps ("+fpsAll.toFixed(2)+"fps since start)";
 			}
 		}
 		function startSim(){
 			var startTime=+(new Date().getTime());
-			var g=setInterval(_draw,1000/240.0,c,notelist,startTime);
+			var g=setInterval(_draw,1000/fps,c,notelist,startTime);
 			stopSim=function(){
 				clearInterval(g);
 				c.reset();
 			}
+			s.innerHTML="Running";
+			lastTime=0;
 		}
 		function stopSim(){
 			clearInterval(_draw);
+			s.innerHTML="Stopped";
 		}
 		
-		var notelist = [
-			new Note([0,2,0.0],6,Note.HIT),
+		var notelist;
+		
+		/*notelist = [
+			new Note([0,0,0.0],6,Note.HIT),
 			new LN(
-				[[[0,2,0.0],0],
-				[[0,2,0.5],1],
-				[[0,2,1.0],2],
-				[[0,2,1.5],3],
-				[[0,2,2.0],2],
-				[[0,2,2.5],1],
-				[[0,2,3.0],0,Note.SWIPE]]),
-			new Note([0,2,0.5],6,Note.HIT),
-			new Note([0,2,1.0],5,Note.HIT),
-			new Note([0,2,1.5],5,Note.HIT),
-			new Note([0,2,2.0],4,Note.HIT),
-			new Note([0,2,2.5],4,Note.HIT),
-			new Note([0,2,3.0],3,Note.HIT),
+				[[[0,0,0.0],0],
+				[[0,0,0.5],1],
+				[[0,0,1.0],2],
+				[[0,0,1.5],3],
+				[[0,0,2.0],2],
+				[[0,0,2.5],1],
+				[[0,0,3.0],0,Note.SWIPE]]),
+			new Note([0,0,0.5],6,Note.HIT),
+			new Note([0,0,1.0],5,Note.HIT),
+			new Note([0,0,1.5],5,Note.HIT),
+			new Note([0,0,2.0],4,Note.HIT),
+			new Note([0,0,2.5],4,Note.HIT),
+			new Note([0,0,3.0],3,Note.HIT),
 			new LN(
-				[[[0,3,0.0],6],
-				[[0,3,3.5],3],
-				[[0,4,0.0],5],
-				[[0,4,3.5],4,Note.LN_END]]),
+				[[[0,1,0.0],6],
+				[[0,1,3.5],3],
+				[[0,2,0.0],5],
+				[[0,2,3.5],4,Note.LN_END]]),
 			new LN(
-				[[[0,3,0.5],3],
-				[[0,3,1.0],2,Note.SWIPE]]),
+				[[[0,1,0.5],3],
+				[[0,1,1.0],2,Note.SWIPE]]),
 			new LN(
-				[[[0,3,1.5],2],
-				[[0,3,2.0],1,Note.SWIPE]]),
+				[[[0,1,1.5],2],
+				[[0,1,2.0],1,Note.SWIPE]]),
 			new LN(
-				[[[0,3,2.5],1],
-				[[0,3,3.0],0,Note.SWIPE]]),
-			new Note([0,4,0.5],0,Note.HIT),
-			new Note([0,4,1.0],3,Note.SWIPE),
-			new Note([0,4,1.5],0,Note.HIT),
-			new Note([0,4,2.0],2,Note.SWIPE),
-			new Note([0,4,2.5],0,Note.HIT),
-			new Note([0,4,3.0],1,Note.SWIPE),			
-		];
+				[[[0,1,2.5],1],
+				[[0,1,3.0],0,Note.SWIPE]]),
+			new Note([0,2,0.5],0,Note.HIT),
+			new Note([0,2,1.0],3,Note.SWIPE),
+			new Note([0,2,1.5],0,Note.HIT),
+			new Note([0,2,2.0],2,Note.SWIPE),
+			new Note([0,2,2.5],0,Note.HIT),
+			new Note([0,2,3.0],1,Note.SWIPE),			
+		];*/
 		/*
 		notelist = [
 			new Note(2.4,2,Note.HIT),
@@ -117,13 +116,29 @@
 			new Note(3.6,4,Note.HIT),
 		];
 		*/
+		notelist=[
+			new Note([0,1,0.0],0,Note.HIT),
+			new Note([0,1,0.0],4,Note.HIT),
+			new Note([0,1,0.5],0,Note.HIT),
+			new Note([0,1,0.5],4,Note.HIT),
+			new Note([0,1,2.0],2,Note.HIT),
+			new Note([0,1,2.0],6,Note.HIT),
+			new Note([0,1,2.5],2,Note.HIT),
+			new Note([0,1,2.5],6,Note.HIT),
+			new Note([0,2,0.0],1,Note.HIT),
+			new Note([0,2,0.5],2,Note.HIT),
+			new Note([0,2,1.0],3,Note.HIT),
+			new Note([0,2,1.5],4,Note.HIT),
+			new Note([0,2,2.0],5,Note.HIT),
+		];
 		
 		var c=new GameContext();
-		c.approachTime=0.7;
+		c.approachTime=100;
 		c.initialise("bandori");
 		
 		var timing=new TimingInfo([
-			{ "offset" : 0, "bpm" : 120, "measure" : 4 }]);
+			{ "offset" : 0, "bpm" : 120, "measure" : 4 }],
+			[[2,70],[2.375,0],[2.875,85],[3.375,0],[3.875,100]]);
 		timing.convertAll(notelist);
 	</script>
 	

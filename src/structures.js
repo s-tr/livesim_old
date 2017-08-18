@@ -3,6 +3,7 @@ function Note(time,lane,type){
 	this.time=time;
 	this.type=type;
 	this.noteType=noteNames[type];
+	this.decoration=[];
 }
 
 Note.ETC         = 0;
