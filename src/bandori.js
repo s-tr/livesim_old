@@ -261,7 +261,7 @@ function __drawLNMidBandori(posArr){
 	c.restore();
 }
 
-function __drawNoteBandori(posArr,type){
+function __drawNoteBandori(posArr,type,decoration){
 	switch(type){
 		case Note.ETC:
 		case Note.HIT:
@@ -296,7 +296,12 @@ function __drawNoteBandori(posArr,type){
  * drawn at a position interpolated between the two times, and a dummy
  * note is drawn there.
  */
-function __drawLNConnectBandori(curTime,fromTime,fromPos,toTime,toPos){
+function __drawLNConnectBandori(curTime,note1,note2){
+	
+	var fromTime=note1.time;
+	var fromPos=note1.lane;
+	var toTime=note2.time;
+	var toPos=note2.lane;
 	
 	if( (fromTime > curTime+this.approachTime) ||
 	    (toTime   < curTime)){
@@ -328,7 +333,7 @@ function __drawLNConnectBandori(curTime,fromTime,fromPos,toTime,toPos){
 	ctx.fill();
 	
 	if(fromTime==curTime){
-		this.drawNote(curTime,new Note(curTime,fromPos,Note.LN_BEGIN));
+		this.drawNote(curTime,new BDNote(curTime,fromPos,Note.LN_BEGIN,note1.decoration));
 	}
 	
 	ctx.restore();
@@ -339,9 +344,31 @@ function __initBandori(t){
 	t.__drawNote=__drawNoteBandori;
 	t.reset=__prepareCanvasBandori;
 	t.__drawLNConnect=__drawLNConnectBandori;
+	t.__decorate=function(){};
 	document.title="bandori player";
 }
 
 __registerInit("bandori",__initBandori);
 
+function BDNote(time,lane,type){
+	Note.call(this,time,lane,lane,type);
+}
 
+BDNote.prototype=Object.create(Note.prototype);
+
+function BDLN(arr){
+	if(arr.length<2){
+		console.log("Malformed LN!");
+		return 0;
+	}
+	this.notes=[];
+	this.notes[0]=new BDNote(arr[0][0],arr[0][1], arr[0][2] || Note.LN_BEGIN);
+	for(var i=1;i<arr.length-1;i++){
+		this.notes[i]=new BDNote(arr[i][0],arr[i][1], arr[i][2] || Note.LN_MID);
+	}
+	this.notes[arr.length-1]=new BDNote(arr[arr.length-1][0],arr[arr.length-1][1], arr[arr.length-1][2] || Note.LN_END);
+	
+	this.noteType="LN";
+}
+
+BDLN.prototype = Object.create(LN.prototype);

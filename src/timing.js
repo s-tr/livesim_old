@@ -12,7 +12,7 @@ function TimingInfo(direct,inherited){
 	var prevPos=0;
 	var prevTime=0;
 	var prevVel=0;
-	if((typeof inherited) != "undefined"){
+	if((typeof inherited) != "undefined" && inherited.length !=0){
 		this.trackSpeed[1]=[];
 		prevTime=this.trackSpeed[1][0]=inherited[0][0];
 		prevVel=this.trackSpeed[1][1]=inherited[0][1];

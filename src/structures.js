@@ -1,9 +1,10 @@
-function Note(time,lane,type){
+function Note(time,origin,lane,type){
+	this.origin=origin;
 	this.lane=lane;
 	this.time=time;
 	this.type=type;
 	this.noteType=noteNames[type];
-	this.decoration=[];
+	this.decoration={};
 }
 
 Note.ETC         = 0;
@@ -31,10 +32,10 @@ Note.prototype.isVisible = function(curTime,apprTime){
  *
  * `arr` is defined in the following format:
  *  [
- *      [time0, lane0],
- *      [time1, lane1],
+ *      [time0, origin0, lane0],
+ *      [time1, origin1, lane1],
  *      ...
- *      [timeN, laneN, typeN]
+ *      [timeN, originN, laneN, typeN]
  *  ]
  * There will be a minimum of 2 notes in an LN (the beginning and the end)
  *
