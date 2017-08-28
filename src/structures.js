@@ -67,3 +67,9 @@ LN.prototype.isVisible = function(curTime,apprTime) {
 		return false;
 	}
 }
+
+function Song(notes,timing){
+	this.notes=notes;
+	this.timing=timing;
+}
+

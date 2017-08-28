@@ -22,7 +22,6 @@
 		var notelist;
 		
 		notelist = [
-			new BDNote([0,0,0.0],0,6,Note.HIT),
 			new BDLN(
 				[[[0,0,0.0],0],
 				[[0,0,0.5],1],
@@ -31,6 +30,7 @@
 				[[0,0,2.0],2],
 				[[0,0,2.5],1],
 				[[0,0,3.0],0]]),
+			new BDNote([0,0,0.0],6,Note.HIT),
 			new BDNote([0,0,0.5],6,Note.HIT),
 			new BDNote([0,0,1.0],5,Note.HIT),
 			new BDNote([0,0,1.5],5,Note.HIT),
@@ -57,21 +57,6 @@
 			new BDNote([0,2,2.0],2,Note.SWIPE),
 			new BDNote([0,2,2.5],0,Note.HIT),
 			new BDNote([0,2,3.0],1,Note.SWIPE),
-			
-			// demo-ing the note speed change 
-			new BDNote([0,4,0.0],0,Note.HIT),
-			new BDNote([0,4,0.0],4,Note.HIT),
-			new BDNote([0,4,0.5],0,Note.HIT),
-			new BDNote([0,4,0.5],4,Note.HIT),
-			new BDNote([0,4,2.0],2,Note.HIT),
-			new BDNote([0,4,2.0],6,Note.HIT),
-			new BDNote([0,4,2.5],2,Note.HIT),
-			new BDNote([0,4,2.5],6,Note.HIT),
-			new BDNote([0,5,0.0],1,Note.HIT),
-			new BDNote([0,5,0.5],2,Note.HIT),
-			new BDNote([0,5,1.0],3,Note.HIT),
-			new BDNote([0,5,1.5],4,Note.HIT),
-			new BDNote([0,5,2.0],5,Note.HIT),
 		];
 		notelist = [
 			new SIFNote([0,0,0.0],0,Note.HIT,{sametime:true}),

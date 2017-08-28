@@ -2,17 +2,26 @@ var circleSize=0.085;
 var innerRadius=0.025;
 var outerRadius=0.625;
 var nLanes=9;
-var red={
-	outColour: "#bb2222",
-	inColour: "#770000",
+
+var colours={};
+colours.red={
+	border: "#d57575",
+	inside: ["#ee2222","#ff7777","#880000","#ca1515"],
+	//border (0,45,84)
+	//inside (0,86,93), (0,53,100), (0,100,53), (0,90,79)
 }
-var blue={
-	outColour: "#77aaff",
-	inColour: "#000077",
+
+colours.blue = {
+	border: "#66aacc",
+	inside: ["#2080f0","#44ffff","#003388","#0088dd"],
+	//border (200,50,80)
+	//inside (212,87,94), (180,73,100), (218,100,53), (203,100,87)
 }
-var green={
-	outColour: "#55ff88",
-	inColour: "#007700",
+colours.green={
+	border: "#80c080",
+	inside: ["#22ee22","#77ff77","#0d880d","#00bb00"],
+	//border (120,33,75)
+	//inside (120,86,93), (128,53,100), (120,0,53), (120,100,73)
 }
 
 function __prepareCanvasSIF (){
@@ -58,15 +67,27 @@ function __drawHitSIF(posArr,deco){
 	var rotate=posArr[3];
 	var radius=scale*circleSize*this.size;
 	var ctx=this.context;
+	var colour=deco.colour;
 	ctx.save();
 	
-	ctx.fillStyle=deco.colour.outColour;
+	ctx.fillStyle=colour.border;
 	ctx.beginPath();
 	ctx.arc(xpos,ypos,radius*1.00,0,Math.PI*2,false);
 	ctx.arc(xpos,ypos,radius*0.79,0,Math.PI*2,true);
 	ctx.closePath();
 	ctx.fill();
-	ctx.fillStyle=deco.colour.inColour;
+	ctx.fillStyle="#ffffff";
+	ctx.beginPath();
+	ctx.arc(xpos,ypos,radius*0.965,0,Math.PI*2,false);
+	ctx.arc(xpos,ypos,radius*0.825,0,Math.PI*2,true);
+	ctx.closePath();
+	ctx.fill();
+	var grad=ctx.createLinearGradient(xpos-0.65*radius,ypos-0.65*radius,xpos+0.65*radius,ypos+0.65*radius);
+	grad.addColorStop(0,colour.inside[0]);
+	grad.addColorStop(0.43,colour.inside[1]);
+	grad.addColorStop(0.57,colour.inside[2]);
+	grad.addColorStop(1,colour.inside[3]);
+	ctx.fillStyle=grad;
 	ctx.beginPath();
 	ctx.arc(xpos,ypos,radius*0.93,0,Math.PI*2,false);
 	ctx.arc(xpos,ypos,radius*0.86,0,Math.PI*2,true);
@@ -74,16 +95,30 @@ function __drawHitSIF(posArr,deco){
 	ctx.fill();
 
 	if(deco.sametime){
-		ctx.fillStyle="#dddddd";
-		ctx.beginPath();
-		ctx.moveTo(xpos+0.95*radius,ypos+0.2*radius);
-		ctx.lineTo(xpos-0.95*radius,ypos+0.2*radius);
-		ctx.lineTo(xpos-0.95*radius,ypos-0.2*radius);
-		ctx.lineTo(xpos+0.95*radius,ypos-0.2*radius);
-		ctx.fill();
+		__decoSameTime.call(this,posArr);
 	}
 	
 	ctx.restore();
+}
+
+function __decoSameTime(posArr){
+	var xpos=posArr[0];
+	var ypos=posArr[1];
+	var scale=posArr[2];
+	var rotate=posArr[3];
+	var radius=scale*circleSize*this.size;
+	var ctx=this.context;
+	
+	var grad=ctx.createLinearGradient(xpos-0.5*radius,ypos,xpos+0.5*radius,ypos);
+	grad.addColorStop(0.0,"#f8f8f8");
+	grad.addColorStop(0.25,"#d3d3d3");
+	grad.addColorStop(0.5,"#c8c8c8");
+	grad.addColorStop(0.75,"#d3d3d3");
+	grad.addColorStop(1.0,"#f8f8f8");
+	ctx.fillStyle="#f8f8f8";
+	ctx.fillRect(xpos-0.95*radius,ypos-0.2*radius,1.9*radius,0.4*radius);
+	ctx.fillStyle=grad;
+	ctx.fillRect(xpos-0.5*radius,ypos-0.1*radius,1.0*radius,0.2*radius);
 }
 
 function __drawLNEndSIF(posArr,deco){
@@ -104,6 +139,19 @@ function __drawLNEndSIF(posArr,deco){
 	ctx.restore();
 }	
 
+function __drawSwipeSIF(posArr,deco,isLeft){
+	var k=(deco.sametime|false);
+	deco.sametime=false;
+	__drawHitSIF.call(this,posArr,deco);
+	deco.sametime=k;
+
+	
+	
+	if(deco.sametime){
+		__decoSameTime.call(this,posArr);
+	}
+}
+
 function __drawNoteSIF(posArr,type,deco){
 	switch(type){
 		case Note.HIT:
@@ -118,7 +166,7 @@ function __drawNoteSIF(posArr,type,deco){
 	}
 }
 
-function __drawLNConnectSIF(curTime,note1,note2){
+function __drawLNConnectSIF(curTime,note1,note2,beginTime){
 	var fromTime=note1.time;
 	var fromPos=note1.lane;
 	var toTime=note2.time;
@@ -130,6 +178,7 @@ function __drawLNConnectSIF(curTime,note1,note2){
 	}
 	
 	if(fromTime < curTime){
+		fromPos=fromPos+(toPos-fromPos)*(curTime-fromTime)/(toTime-fromTime);
 		fromTime=curTime;
 	}
 	
@@ -175,7 +224,7 @@ __registerInit("sif",__initSIF);
 function SIFNote(time,lane,type,decorate){
 	Note.call(this,time,lane,lane,type);
 	this.decoration.isStar = (decorate||{}).star || false;
-	this.decoration.colour = (decorate||{}).colour || blue;
+	this.decoration.colour = (decorate||{}).colour || colours.blue;
 	this.decoration.sametime = (decorate||{}).sametime || false;
 }
 

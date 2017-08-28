@@ -63,12 +63,11 @@ function GameContext(){
  * 2. The type of note (see structures.js)
  * 3. The decoration associated with the note
  * 
- * __drawLNConnect() takes five values:
+ * __drawLNConnect() takes three values:
  * 1. The current time
- * 2. The time offset of the beginning of the connector
- * 3. The lane of the beginning of the connector
- * 4. The time offset of the end of the connector
- * 5. The lane of the end of the connector
+ * 2. The note at the beginning of the connector
+ * 3. The note at the end of the connector
+ * 4. The time at the beginning of the LN.
  *
  * These functions do not return a value.
  * 
@@ -97,6 +96,7 @@ GameContext.prototype.drawNote=function (curTime,note){
 }
 
 GameContext.prototype.drawLN = function (curTime,ln){
+	var beginTime=ln.notes[0].time;
 	var visBegin=0;
 	var visEnd=ln.notes.length-1;
 	while(ln.notes[visBegin].time<curTime){
@@ -113,7 +113,8 @@ GameContext.prototype.drawLN = function (curTime,ln){
 			ln.notes[i+1].time,ln.notes[i+1].lane);*/
 		this.__drawLNConnect(
 			curTime,
-			ln.notes[i], ln.notes[i+1]);
+			ln.notes[i], ln.notes[i+1],
+			beginTime);
 	}
 	
 	for(var i=visBegin;i<=visEnd;i++){

@@ -100,7 +100,7 @@ function __drawHitBandori(posArr){
 	var rotate=posArr[3];
 	var skew=posArr[4];
 	var xdim=scale*bd.laneWidth()*this.size/2;
-	var ydim=(0.2+0.8*scale)*scale*0.1*(bd.judgePos-bd.trackTop)*this.size/2;
+	var ydim=(0.2+0.8*scale)*scale*0.12*(bd.judgePos-bd.trackTop)*this.size/2;
 	var c=this.context;
 	var grad=c.createLinearGradient(xpos,ypos-ydim*0.8,xpos,ypos+ydim*0.8);
 	grad.addColorStop(0,'#b57edc');
@@ -296,7 +296,7 @@ function __drawNoteBandori(posArr,type,decoration){
  * drawn at a position interpolated between the two times, and a dummy
  * note is drawn there.
  */
-function __drawLNConnectBandori(curTime,note1,note2){
+function __drawLNConnectBandori(curTime,note1,note2,beginTime){
 	
 	var fromTime=note1.time;
 	var fromPos=note1.lane;

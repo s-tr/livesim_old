@@ -8,24 +8,24 @@
  */
 function TimingInfo(direct,inherited){
 	this.timingInfo=direct;
-	this.trackSpeed=[[0,100,0]];
+	this.trackSpeed=[{offset: 0, speed: 100, beginPos: 0}];
 	var prevPos=0;
 	var prevTime=0;
 	var prevVel=0;
 	if((typeof inherited) != "undefined" && inherited.length !=0){
-		this.trackSpeed[1]=[];
-		prevTime=this.trackSpeed[1][0]=inherited[0][0];
-		prevVel=this.trackSpeed[1][1]=inherited[0][1];
-		prevPos=this.trackSpeed[1][2]=prevTime*prevVel;
+		this.trackSpeed[1]={};
+		prevTime=this.trackSpeed[1].offset=inherited[0][0];
+		prevVel=this.trackSpeed[1].speed=inherited[0][1];
+		prevPos=this.trackSpeed[1].beginPos=prevTime*prevVel;
 		this.trackSpeed[0][1]=prevVel;
 		for(var i=1;i<inherited.length;i++){
-			var newTime=inherited[i][0];
-			var newVel=inherited[i][1];
+			var newTime=inherited[i].offset;
+			var newVel=inherited[i].speed;
 			var newPos=prevPos+prevVel*(newTime-prevTime);
-			this.trackSpeed[i+1]=[];
-			this.trackSpeed[i+1][0]=newTime;
-			this.trackSpeed[i+1][1]=newVel;
-			this.trackSpeed[i+1][2]=newPos;
+			this.trackSpeed[i+1]={};
+			this.trackSpeed[i+1].offset=newTime;
+			this.trackSpeed[i+1].speed=newVel;
+			this.trackSpeed[i+1].beginPos=newPos;
 			prevTime=newTime;
 			prevVel=newVel;
 			prevPos=newPos;
@@ -58,34 +58,12 @@ TimingInfo.prototype.time = function(arr){
  */
 TimingInfo.prototype.trackPos = function(time){
 	var i=1;
-	while((i<this.trackSpeed.length)&&(time>=this.trackSpeed[i][0])){
+	while((i<this.trackSpeed.length)&&(time>=this.trackSpeed[i].offset)){
 		i++;
 	}
-	return this.trackSpeed[i-1][2]+(time-this.trackSpeed[i-1][0])*this.trackSpeed[i-1][1];
+	return this.trackSpeed[i-1].beginPos+(time-this.trackSpeed[i-1].offset)*this.trackSpeed[i-1].speed;
 }
 
-/**
- * Converts, in place, a note from human-readable form [section,bar,beat]
- * to its raw timing value.
- */
-TimingInfo.prototype.convert1 = function(note){
-	if(note.noteType=="LN"){
-		this.convertAll(note.notes);
-	} else {
-		note.time=this.time(note.time);
-	}
-}
-
-/**
- * Converts, in place, a whole array of notes from human-readable form
- * [section,bar,beat] to its raw timing value.
- */
-TimingInfo.prototype.convertAll1 = function(noteList){
-	for(var i=0;i<noteList.length;i++){
-		this.convert(noteList[i]);
-	}
-}
-			
 /**
  * Converts, in place, a note to its position on a variable-speed track, given
  * that convert1() has already been applied to it.
@@ -138,4 +116,21 @@ TimingInfo.prototype.convertAll2 = function(noteList){
 	for(var i=0;i<noteList.length;i++){
 		this.convert2(noteList[i]);
 	}
+}
+
+/**
+ * Attempts to convert a note from its time back to its human readable form.
+ * 
+ */
+TimingInfo.prototype.fromTime = function(time){
+	var i=0;
+	while((i<this.timingInfo.length) && (time <= this.timingInfo[i].offset)){
+		console.log(i);
+		i++;
+	}
+	var section=this.timingInfo[Math.min(i,this.timingInfo.length-1)];
+	var beats=(time-section.offset)/(60.0/section.bpm);
+	var barN=Math.floor(beats/section.measure);
+	var noteN=beats-section.measure*barN;
+	return [i,barN,noteN];
 }
